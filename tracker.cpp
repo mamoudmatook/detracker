@@ -6,30 +6,24 @@
 using namespace cv;
 using namespace std;
 Ptr<Tracker> tracker;
-Mat frame;
+struct userdata
+{
+	Mat img;
+	Rect2d bbox;
+};
+void mousehandler(int event,int x,int y,int flag,void *data_ptr)
+{
+	if  ( event == EVENT_LBUTTONDOWN )
+    {
+        userdata *data = ((userdata *) data_ptr);
+    data->bbox = selectROI(data->img, false);
 
+    tracker->init(data->img, data->bbox);
+}
+}
 // Convert to string
 #define SSTR( x ) static_cast< std::ostringstream & >( \
 ( std::ostringstream() << std::dec << x ) ).str()
-struct userdata{
-	Mat img;
-    Rect2d bbox;
-};
-
-
-void mouseHandler(int event,int x,int y,int flags ,void *data_ptr)
-{
-    if(event==EVENT_LBUTTONDOWN)
-	   {
-		userdata *data=((userdata*)data_ptr);
-
-                data->bbox = selectROI(data->img, false);
-		
-                 tracker->init(frame, data->bbox);
-	   }
-		
-
-}
 
 
 
@@ -37,19 +31,19 @@ int main(int argc, char **argv)
 {
     // List of tracker types in OpenCV 3.2
     // NOTE : GOTURN implementation is buggy and does not work.
-    string trackerTypes[6] = {"BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN"};
+    string trackerTypes[7] = {"BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN", "CSRT"};
     // vector <string> trackerTypes(types, std::end(types));
 
     // Create a tracker
     string trackerType = trackerTypes[2];
 
 
-  /*  #if (CV_MINOR_VERSION < 3)
+    #if 0
     {
         tracker = Tracker::create(trackerType);
     }
     #else
-    {*/
+    {
         if (trackerType == "BOOSTING")
             tracker = TrackerBoosting::create();
         if (trackerType == "MIL")
@@ -62,8 +56,10 @@ int main(int argc, char **argv)
             tracker = TrackerMedianFlow::create();
         if (trackerType == "GOTURN")
             tracker = TrackerGOTURN::create();
-   // }
-   // #endif
+        if (trackerType == "CSRT")
+            tracker = TrackerCSRT::create();
+    }
+    #endif
     // Read video
     VideoCapture video(0);
     
@@ -74,33 +70,28 @@ int main(int argc, char **argv)
         return 1;
         
     }
-    
+    userdata data;
     // Read first frame
- //   Mat frame;
-   // bool ok = video.read(frame);
+    Mat frame;
+    bool ok = video.read(frame);
+    data.img=frame;
     
-    namedWindow("Tracking", 1);
-    //Define initial boundibg box
-   userdata data;
+    // Define initial boundibg box
+   // Rect2d bbox(287, 23, 86, 320);
     
     // Uncomment the line below to select a different bounding box
-   // bbox = selectROI(frame, false);
 
     // Display bounding box.
-    //rectangle(frame, bbox, Scalar( 255, 0, 0 ), 2, 1 );
-    //imshow("Tracking", frame);
-    
-    setMouseCallback("Tracking", mouseHandler, &data);
-    Point2d ptl,pbr;
-    Size2d s2;
+   // rectangle(frame, bbox, Scalar( 255, 0, 0 ), 2, 1 );
+   // imshow("Tracking", frame);
+      namedWindow("Tracking", 1);
+
+     setMouseCallback("Tracking", mousehandler, &data);
+
     while(video.read(frame))
     {
-     if(frame.empty())
-	     break;
-    // imshow("Tracking",frame);
-    // waitKey(5);
+     //data.img=frame;
         // Start timer
-	data.img=frame;
         double timer = (double)getTickCount();
         
         // Update the tracking result
@@ -113,13 +104,7 @@ int main(int argc, char **argv)
         if (ok)
         {
             // Tracking success : Draw the tracked object
-            rectangle(frame,data.bbox, Scalar( 255, 0, 0 ), 2, 1 );
-	    ptl=data.bbox.tl();
-	    pbr=data.bbox.br();
-	    s2=data.bbox.size();
-	    cout<<(ptl.x+s2.width)/2<<" " <<(ptl.y+s2.height)/2<<endl;
-	    //cout<<s2.height<<" " <<s2.width<<endl;
-
+            rectangle(frame, data.bbox, Scalar( 255, 0, 0 ), 2, 1 );
         }
         else
         {

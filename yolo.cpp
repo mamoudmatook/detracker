@@ -127,7 +127,10 @@ int main(int argc, char** argv)
                               Scalar(255, 255, 255), -1);
                     putText(frame, label, Point(xLeftBottom, yLeftBottom+labelSize.height),
                             FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0));
-		    cout<<(xRightTop-xLeftBottom)/2<<" "<<(yLeftBottom-yRightTop)/2<<endl;
+		    cout<<(xLeftBottom-xRightTop)/2+xRightTop<<", "<<(yLeftBottom-yRightTop)/2+yRightTop<<endl;
+		    int x_object=(xLeftBottom-xRightTop)/2+xRightTop;
+		    int y_object=(yLeftBottom-yRightTop)/2+yRightTop;
+		    cout<<720/2-x_object<<","<<480/2-y_object<<endl;
                 }
                 else
                 {
