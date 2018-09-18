@@ -25,6 +25,7 @@ static const char* params =
 "{ class_names    |       | File with class names, [PATH-TO-DARKNET]/data/coco.names }";
 int main(int argc, char** argv)
 {
+	ofstream outfile;
     CommandLineParser parser(argc, argv, params);
     if (parser.get<bool>("help"))
     {
@@ -127,10 +128,15 @@ int main(int argc, char** argv)
                               Scalar(255, 255, 255), -1);
                     putText(frame, label, Point(xLeftBottom, yLeftBottom+labelSize.height),
                             FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0,0,0));
-		    cout<<(xLeftBottom-xRightTop)/2+xRightTop<<", "<<(yLeftBottom-yRightTop)/2+yRightTop<<endl;
-		    int x_object=(xLeftBottom-xRightTop)/2+xRightTop;
-		    int y_object=(yLeftBottom-yRightTop)/2+yRightTop;
-		    cout<<720/2-x_object<<","<<480/2-y_object<<endl;
+		   // cout<<(xLeftBottom-xRightTop)/2+xRightTop<<", "<<(yLeftBottom-yRightTop)/2+yRightTop<<endl;
+		    int x_object=(720/2)-((xLeftBottom-xRightTop)/2+xRightTop);
+		    int y_object=(480/2)-((yLeftBottom-yRightTop)/2+yRightTop);
+		   // cout<<720/2-x_object<<","<<480/2-y_object<<endl;
+		     outfile.open("coordinates", ios::out | ios::app );
+		     outfile <<x_object<<","<<y_object<<endl;
+                      outfile.close();
+
+
                 }
                 else
                 {

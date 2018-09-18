@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/tracking.hpp>
 #include <opencv2/core/ocl.hpp>
-
+#include<fstream>
 
 using namespace cv;
 using namespace std;
@@ -19,6 +19,7 @@ void mousehandler(int event,int x,int y,int flag,void *data_ptr)
     data->bbox = selectROI(data->img, false);
 
     tracker->init(data->img, data->bbox);
+	  // tracker->update(data->img, data->bbox);
 }
 }
 // Convert to string
@@ -85,8 +86,14 @@ int main(int argc, char **argv)
    // rectangle(frame, bbox, Scalar( 255, 0, 0 ), 2, 1 );
    // imshow("Tracking", frame);
       namedWindow("Tracking", 1);
+     // Rect2d box(40,60,100,100);
+      //data.bbox=box;
+    //  tracker->init(data.img, data.bbox);
 
-     setMouseCallback("Tracking", mousehandler, &data);
+      Point2d ptl,pbr;
+      setMouseCallback("Tracking", mousehandler, &data);
+      ofstream outfile;
+      int x_object,y_object;
 
     while(video.read(frame))
     {
@@ -104,9 +111,30 @@ int main(int argc, char **argv)
         if (ok)
         {
             // Tracking success : Draw the tracked object
-            rectangle(frame, data.bbox, Scalar( 255, 0, 0 ), 2, 1 );
+	    ptl=data.bbox.tl();
+	    pbr=data.bbox.br();
+           /*  if((ptl.x==0)||(ptl.y==0)||(pbr.x>720)||(pbr.y>480))
+	     {
+		     tracker->clear();
+
+                    Ptr<Tracker> trackerNew = TrackerKCF::create();
+
+                   tracker = trackerNew;
+                   tracker->init( frame, data.bbox );
+	     }*/
+			     
+             rectangle(frame, data.bbox, Scalar( 255, 0, 0 ), 2, 1 );
+	     x_object=(720/2)-((pbr.x-ptl.x)/2+ptl.x);
+	     y_object=(480/2)-((pbr.y-ptl.y)/2+ptl.y);
+	     outfile.open("coordinates", ios::out | ios::app );
+	     outfile <<x_object<<","<<y_object<<endl;
+             outfile.close();
+	      if((ptl.x==0)||(ptl.y==0)||(pbr.x>720)||(pbr.y>480))
+		      tracker->clear();
+
+	   
         }
-        else
+	else
         {
             // Tracking failure detected.
             putText(frame, "Tracking failure detected", Point(100,80), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0,0,255),2);
